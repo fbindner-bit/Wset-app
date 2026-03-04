@@ -83,7 +83,7 @@
     </div>
 
     <script>
-        const API_KEY = "AIzaSyAivdHawUwI2O17L276FsYn9nums1rtFTU";
+        const API_KEY = "AIzaSyDbZEBLLPi72f_4v0mLifbex08zq-_9wO0";
         let player = { role: "", kp: 100, location: "London" };
 
         const regions = [
@@ -145,7 +145,7 @@
             document.getElementById('quest-options').innerHTML = "";
 
             const prompt = `Du er en WSET Level 3 censor. Spilleren er ${player.role} i ${regionName}. 
-            Generer en teknisk svær opgave i JSON format: 
+            Generer en teknisk svær opgave i JSON format uden markdown formatering: 
             {"title": "Kort Titel", "desc": "WSET teknisk tekst", "options": [{"t": "Korrekt svar", "p": 20}, {"t": "Forkert svar", "p": -15}]}`;
 
             try {
@@ -156,6 +156,11 @@
                 });
 
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
                 const text = data.candidates[0].content.parts[0].text;
                 const cleanJson = text.replace(/```json|```/g, "").trim();
                 const quest = JSON.parse(cleanJson);
@@ -174,7 +179,7 @@
                 document.getElementById('quest-content').style.opacity = "1";
             } catch (err) {
                 console.error(err);
-                alert("Forbindelsesfejl. Sørg for at du bruger et HTTPS link (f.eks. Vercel).");
+                alert("Forbindelsesfejl: " + err.message);
                 showMap();
             }
         }
