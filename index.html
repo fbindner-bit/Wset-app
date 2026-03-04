@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WSET World Engine | AI Edition</title>
+    <title>WSET World Engine | Offline Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { background-color: #0a0a0a; color: #f0f0f0; font-family: 'Inter', sans-serif; }
         .serif { font-family: 'Playfair Display', serif; }
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .wine-bg { background: linear-gradient(135deg, #450a0a 0%, #1a0505 100%); }
-        .loader { border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid #b91c1c; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .animate-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -28,7 +25,7 @@
             </div>
             <div class="glass p-4 rounded-2xl border-l-4 border-yellow-600 text-center">
                 <p class="text-[10px] uppercase opacity-40 tracking-widest">Knowledge</p>
-                <p id="player-kp" class="font-bold text-yellow-500">0</p>
+                <p id="player-kp" class="font-bold text-yellow-500">100</p>
             </div>
             <div class="glass p-4 rounded-2xl border-l-4 border-gray-400 text-right">
                 <p class="text-[10px] uppercase opacity-40 tracking-widest">Region</p>
@@ -38,22 +35,22 @@
 
         <div id="screen-setup" class="py-20 text-center animate-in">
             <h1 class="text-6xl serif mb-6 text-white tracking-tight">The WSET Engine</h1>
-            <p class="text-gray-500 mb-12 text-lg">AI-drevet simulation af vinens verden.</p>
+            <p class="text-gray-500 mb-12 text-lg">Professionel vintjek uden AI-fejl.</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <button onclick="startGame('Winemaker')" class="glass p-10 rounded-3xl hover:border-red-700 transition text-left group">
                     <div class="text-3xl mb-4">🍇</div>
                     <h2 class="text-xl font-bold group-hover:text-red-500">Winemaker</h2>
-                    <p class="text-xs opacity-50 mt-2">Fokus på terroir og kælderarbejde.</p>
+                    <p class="text-xs opacity-50 mt-2">Terroir og teknik.</p>
                 </button>
                 <button onclick="startGame('Sommelier')" class="glass p-10 rounded-3xl hover:border-red-700 transition text-left group">
                     <div class="text-3xl mb-4">🍷</div>
                     <h2 class="text-xl font-bold group-hover:text-red-500">Sommelier</h2>
-                    <p class="text-xs opacity-50 mt-2">Fokus på smagning og service.</p>
+                    <p class="text-xs opacity-50 mt-2">Smagning og service.</p>
                 </button>
                 <button onclick="startGame('Sælger')" class="glass p-10 rounded-3xl hover:border-red-700 transition text-left group">
                     <div class="text-3xl mb-4">💰</div>
                     <h2 class="text-xl font-bold group-hover:text-red-500">Sælger</h2>
-                    <p class="text-xs opacity-50 mt-2">Fokus på handel og lovgivning.</p>
+                    <p class="text-xs opacity-50 mt-2">Handel og lovgivning.</p>
                 </button>
             </div>
         </div>
@@ -68,10 +65,6 @@
 
         <div id="screen-quest" class="hidden max-w-xl mx-auto animate-in">
             <div class="glass p-10 rounded-[2rem] relative overflow-hidden shadow-2xl">
-                <div id="ai-status" class="hidden flex items-center gap-3 mb-6">
-                    <div class="loader"></div>
-                    <span class="text-[10px] font-bold uppercase tracking-widest text-red-500">Gemini analyserer terroir...</span>
-                </div>
                 <div id="quest-content">
                     <h2 id="quest-title" class="text-3xl serif text-white mb-6 leading-tight"></h2>
                     <p id="quest-desc" class="text-gray-400 text-lg leading-relaxed mb-10"></p>
@@ -83,28 +76,41 @@
     </div>
 
     <script>
-        const API_KEY = "AIzaSyDbZEBLLPi72f_4v0mLifbex08zq-_9wO0";
         let player = { role: "", kp: 100, location: "London" };
 
+        const questions = {
+            "Bourgogne": [
+                { title: "Klimatiske udfordringer", desc: "Hvilket fænomen er den største trussel mod høstudbyttet i Chablis om foråret?", options: [{t: "Forårsfrost", p: 20}, {t: "Coulure", p: -10}] },
+                { title: "Klassifikation", desc: "Hvilket niveau i hierarkiet refererer til en specifik mark (climat) af højeste kvalitet?", options: [{t: "Grand Cru", p: 20}, {t: "Premier Cru", p: -10}] }
+            ],
+            "Mosel": [
+                { title: "Terroir", desc: "Hvilken type jordbund er mest karakteristisk for de bedste stejle skråninger i Mosel?", options: [{t: "Skifer (Slate)", p: 20}, {t: "Grus", p: -10}] },
+                { title: "Prädikat", desc: "Hvilken betegnelse indikerer en vin lavet på fuldt modne druer, ofte høstet senere end Kabinett?", options: [{t: "Spätlese", p: 20}, {t: "Trocken", p: -10}] }
+            ],
+            "Rioja": [
+                { title: "Lagring", desc: "Hvor længe skal en rød Rioja Reserva minimum lagre (fad + flaske i alt)?", options: [{t: "36 måneder", p: 20}, {t: "24 måneder", p: -10}] },
+                { title: "Druer", desc: "Hvilken drue udgør typisk hovedparten i en klassisk rød Rioja?", options: [{t: "Tempranillo", p: 20}, {t: "Garnacha", p: -10}] }
+            ],
+            "Champagne": [
+                { title: "Metode", desc: "Hvad kaldes processen, hvor gærsedimentet samles i flaskehalsen før degorgering?", options: [{t: "Remuage (Riddling)", p: 20}, {t: "Assemblage", p: -10}] }
+            ]
+        };
+
         const regions = [
-            { id: "mosel", name: "Mosel", info: "Køligt, Stejle skråninger" },
-            { id: "bourgogne", name: "Bourgogne", info: "Kalksten, Terroir-hierarki" },
-            { id: "rioja", name: "Rioja", info: "Egetræ, Klassifikationer" },
-            { id: "champagne", name: "Champagne", info: "Metode Traditionnelle" },
-            { id: "napa", name: "Napa Valley", info: "Varme, Kølende tåge" },
-            { id: "jerez", name: "Jerez", info: "Forstærket vin, Flor" }
+            { id: "bourgogne", name: "Bourgogne", info: "Pinot Noir & Chardonnay" },
+            { id: "mosel", name: "Mosel", info: "Riesling & Stejle bjerge" },
+            { id: "rioja", name: "Rioja", info: "Tempranillo & Eg" },
+            { id: "champagne", name: "Champagne", info: "Bobler & Kalk" }
         ];
 
         window.onload = () => {
-            const saved = localStorage.getItem('wsetEngineV2');
+            const saved = localStorage.getItem('wsetStaticV1');
             if (saved) {
                 Object.assign(player, JSON.parse(saved));
                 updateUI();
                 showMap();
             }
         };
-
-        function save() { localStorage.setItem('wsetEngineV2', JSON.stringify(player)); }
 
         function updateUI() {
             document.getElementById('player-role').innerText = player.role;
@@ -117,7 +123,7 @@
         function startGame(role) {
             player.role = role;
             updateUI();
-            save();
+            localStorage.setItem('wsetStaticV1', JSON.stringify(player));
             showMap();
         }
 
@@ -135,69 +141,39 @@
             });
         }
 
-        async function enterRegion(regionName) {
-            player.location = regionName;
+        function enterRegion(name) {
+            player.location = name;
             updateUI();
             document.getElementById('screen-map').classList.add('hidden');
             document.getElementById('screen-quest').classList.remove('hidden');
-            document.getElementById('quest-content').style.opacity = "0.1";
-            document.getElementById('ai-status').classList.remove('hidden');
-            document.getElementById('quest-options').innerHTML = "";
+            
+            const regionQuests = questions[name] || questions["Bourgogne"];
+            const quest = regionQuests[Math.floor(Math.random() * regionQuests.length)];
 
-            const prompt = `Du er en WSET Level 3 censor. Spilleren er ${player.role} i ${regionName}. 
-            Generer en teknisk svær opgave i JSON format uden markdown formatering: 
-            {"title": "Kort Titel", "desc": "WSET teknisk tekst", "options": [{"t": "Korrekt svar", "p": 20}, {"t": "Forkert svar", "p": -15}]}`;
-
-            try {
-                // Opdateret URL til v1 og gemini-1.5-flash-latest
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-
-                const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
-                const text = data.candidates[0].content.parts[0].text;
-                const cleanJson = text.replace(/```json|```/g, "").trim();
-                const quest = JSON.parse(cleanJson);
-
-                document.getElementById('quest-title').innerText = quest.title;
-                document.getElementById('quest-desc').innerText = quest.desc;
-                
-                quest.options.forEach(o => {
-                    document.getElementById('quest-options').innerHTML += `
-                        <button onclick="resolveQuest(${o.p})" class="w-full glass p-5 rounded-2xl text-left hover:bg-red-900/20 hover:border-red-500 transition text-sm">
-                            ${o.t}
-                        </button>`;
-                });
-
-                document.getElementById('ai-status').classList.add('hidden');
-                document.getElementById('quest-content').style.opacity = "1";
-            } catch (err) {
-                console.error(err);
-                alert("Fejl: " + err.message);
-                showMap();
-            }
+            document.getElementById('quest-title').innerText = quest.title;
+            document.getElementById('quest-desc').innerText = quest.desc;
+            
+            const optionsDiv = document.getElementById('quest-options');
+            optionsDiv.innerHTML = "";
+            quest.options.forEach(o => {
+                optionsDiv.innerHTML += `
+                    <button onclick="resolveQuest(${o.p})" class="w-full glass p-5 rounded-2xl text-left hover:bg-red-900/20 hover:border-red-500 transition text-sm">
+                        ${o.t}
+                    </button>`;
+            });
         }
 
         function resolveQuest(p) {
             player.kp += p;
-            save();
-            alert(p > 0 ? "Korrekt! Din viden stiger." : "Forkert. Det koster point i din vurdering.");
+            localStorage.setItem('wsetStaticV1', JSON.stringify(player));
+            alert(p > 0 ? "Korrekt!" : "Forkert svar.");
             updateUI();
             showMap();
         }
 
         function resetGame() {
-            if(confirm("Nulstil alt?")) {
-                localStorage.removeItem('wsetEngineV2');
-                location.reload();
-            }
+            localStorage.removeItem('wsetStaticV1');
+            location.reload();
         }
     </script>
 </body>
